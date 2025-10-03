@@ -1,0 +1,13 @@
+google-adk
+litellm
+openinference-instrumentation-google-adk
+arize-phoenix-otel
+litellm
+tiktoken
+orjson
+apscheduler
+email_validator
+fastapi_sso
+nest-asyncio
+langchain-text-splitters
+a2a-sdk

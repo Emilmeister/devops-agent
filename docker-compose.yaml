@@ -1,0 +1,8 @@
+services:
+  agent-long-context:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    ports:
+      - 10009:10009
+    env_file: .env
