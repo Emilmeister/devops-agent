@@ -14,6 +14,15 @@ from worker_agent.agent import devops_agent
 logger = logging.getLogger("agents_logger")
 
 
+def truncate_string(text: str, limit: int = 100) -> str:
+    """
+    Обрезает строку до указанного количества символов.
+    Если строка длиннее, добавляет '...' в конце.
+    """
+    if len(text) > limit:
+        return text[:limit] + "..."
+    return text
+
 
 class A2Aagent:
     def __init__(self):
@@ -34,8 +43,6 @@ class A2Aagent:
             user_id='a2a_user',
             session_id=session_id
         )
-
-        print('get_session', session_id, session)
 
         if session is None:
             session = await self.runner.session_service.create_session(
@@ -82,30 +89,49 @@ class A2Aagent:
             parts=[types.Part.from_text(text=query)],
         )
         last_event = None
-        async for event in self.runner.run_async(
-                user_id=session.user_id, session_id=session.id, new_message=content
-        ):
-            for part in event.content.parts:
-                if part.function_call is not None and 'short_info_to_user_what_you_do' in part.function_call.args:
-                    yield {
-                        "is_task_complete": True,
-                        "require_user_input": False,
-                        "content": part.function_call.args['short_info_to_user_what_you_do'],
-                        "is_error": False,
-                        "is_event": True
-                    }
+        try:
+            async for event in self.runner.run_async(
+                    user_id=session.user_id, session_id=session.id, new_message=content
+            ):
+                logger.info(f'self.runner.run_async {event}')
+                for part in event.content.parts:
+                    if part.function_call is not None:
+                        if 'short_info_to_user_what_you_do' in part.function_call.args:
+                            yield {
+                                "is_task_complete": True,
+                                "require_user_input": False,
+                                "content": part.function_call.args['short_info_to_user_what_you_do'],
+                                "is_error": False,
+                                "is_event": True
+                            }
+                        if 'command' in part.function_call.args:
+                            yield {
+                                "is_task_complete": True,
+                                "require_user_input": False,
+                                "content": f'```bash\n{truncate_string(part.function_call.args['command'])}\n```',
+                                "is_error": False,
+                                "is_event": True
+                            }
 
-            last_event = event
+                last_event = event
 
-        response = '\n'.join(p.text for p in last_event.content.parts if p.text)
+            response = '\n'.join(p.text for p in last_event.content.parts if p.text)
 
-        yield {
-            "is_task_complete": True,
-            "require_user_input": False,
-            "content": response,
-            "is_error": False,
-            "is_event": False
-        }
+            yield {
+                "is_task_complete": True,
+                "require_user_input": False,
+                "content": response,
+                "is_error": False,
+                "is_event": False
+            }
+        except Exception:
+            yield {
+                "is_task_complete": False,
+                "require_user_input": False,
+                "content": "Произошла ошибка при вызове агента",
+                "is_error": True,
+                "is_event": False
+            }
 
 
     # For compatibility with the original implementation

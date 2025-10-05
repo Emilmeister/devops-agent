@@ -1,3 +1,6 @@
+import logging
+import traceback
+
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.server.tasks import TaskUpdater
@@ -37,66 +40,75 @@ class MyAgentExecutor(AgentExecutor):
         updater = TaskUpdater(event_queue, task.id, task.context_id)
         # invoke the underlying agent, using streaming results. The streams
         # now are update events.
-        async for item in self.agent.stream(query, task.context_id):
-            is_task_complete = item['is_task_complete']
-            require_user_input = item['require_user_input']
-            is_error = item['is_error']
-            is_event = item['is_event']
+        try:
+            async for item in self.agent.stream(query, task.context_id):
+                is_task_complete = item['is_task_complete']
+                require_user_input = item['require_user_input']
+                is_error = item['is_error']
+                is_event = item['is_event']
 
-            if is_error:
-                await updater.update_status(
-                    TaskState.failed,
-                    new_agent_text_message(
-                        item['content'], task.context_id, task.id
-                    ),
-                )
-                break
-            if is_event:
-                artifact = new_text_artifact(
-                        name="doing",
-                        text=item['content'],
-                        description=""
+                if is_error:
+                    await updater.update_status(
+                        TaskState.failed,
+                        new_agent_text_message(
+                            item['content'], task.context_id, task.id
+                        ),
                     )
-                await updater.add_artifact(
-                    parts=artifact.parts,
-                    artifact_id=artifact.artifact_id,
-                    name=artifact.name,
-                    metadata=artifact.metadata,
-                    append=False,
-                    last_chunk=True
-                )
-                await updater.update_status(
-                    TaskState.working,
-                    new_agent_text_message(
-                        item['content'], task.context_id, task.id
-                    ),
-                )
-                continue
-            if not is_task_complete and not require_user_input:
-                await updater.update_status(
-                    TaskState.working,
-                    new_agent_text_message(
-                        item['content'], task.context_id, task.id
-                    ),
-                )
-                continue
+                    break
+                if is_event:
+                    artifact = new_text_artifact(
+                            name="doing",
+                            text=item['content'],
+                            description=""
+                        )
+                    await updater.add_artifact(
+                        parts=artifact.parts,
+                        artifact_id=artifact.artifact_id,
+                        name=artifact.name,
+                        metadata=artifact.metadata,
+                        append=False,
+                        last_chunk=True
+                    )
+                    await updater.update_status(
+                        TaskState.working,
+                        new_agent_text_message(
+                            item['content'], task.context_id, task.id
+                        ),
+                    )
+                    continue
+                if not is_task_complete and not require_user_input:
+                    await updater.update_status(
+                        TaskState.working,
+                        new_agent_text_message(
+                            item['content'], task.context_id, task.id
+                        ),
+                    )
+                    continue
 
-            if not is_task_complete and require_user_input:
-                await updater.update_status(
-                    TaskState.input_required,
-                    new_agent_text_message(
-                        item['content'], task.context_id, task.id
-                    ),
-                )
-                break
-            if is_task_complete and not require_user_input:
-                await updater.update_status(
-                    TaskState.completed,
-                    new_agent_text_message(
-                        item['content'], task.context_id, task.id
-                    ),
-                )
-                break
+                if not is_task_complete and require_user_input:
+                    await updater.update_status(
+                        TaskState.input_required,
+                        new_agent_text_message(
+                            item['content'], task.context_id, task.id
+                        ),
+                    )
+                    break
+                if is_task_complete and not require_user_input:
+                    await updater.update_status(
+                        TaskState.completed,
+                        new_agent_text_message(
+                            item['content'], task.context_id, task.id
+                        ),
+                    )
+                    break
+        except Exception as e:
+            logging.error(traceback.format_exc())
+            await updater.update_status(
+                TaskState.completed,
+                new_agent_text_message(
+                    '⚠️ Произошла ошибка! Задача не выполнена. Попробуйте позже еще раз', task.context_id, task.id
+                ),
+            )
 
     async def cancel(
         self, request: RequestContext, event_queue: EventQueue

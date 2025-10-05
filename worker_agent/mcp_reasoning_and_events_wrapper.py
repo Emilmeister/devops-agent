@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections import OrderedDict
 from typing import Any, Dict, List, Optional
 
 from google.adk.agents.readonly_context import ReadonlyContext
@@ -30,14 +31,17 @@ class CallMcpTool(BaseTool):
 
     def _get_declaration(self) -> Optional[types.FunctionDeclaration]:
         declaration = self.base_tool._get_declaration()
-        declaration.parameters.properties['smart_reasoning'] = types.Schema(
+        smart_reasoning_cortage = ('smart_reasoning', types.Schema(
             type=types.Type.STRING,
             title='Поразмышляй над тем что ты уже сделал и что еще нужно сделать чтобы удовлетворить пользователя. Этот параметр тула всегда пиши первым!'
-        )
-        declaration.parameters.properties['short_info_to_user_what_you_do'] = types.Schema(
+        ))
+        short_info_to_user_what_you_do_cortage = ('short_info_to_user_what_you_do', types.Schema(
             type=types.Type.STRING,
             title='Краткое описание что ты сейчас собираешься сделать.'
-        )
+        ))
+        ordered_properties = OrderedDict([smart_reasoning_cortage, short_info_to_user_what_you_do_cortage] + [(k, v) for k, v in declaration.parameters.properties.items()])
+        declaration.parameters.properties = ordered_properties
+        declaration.parameters.required = declaration.parameters.required + ['smart_reasoning', 'short_info_to_user_what_you_do']
         return declaration
 
     async def run_async(self, tool_context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
