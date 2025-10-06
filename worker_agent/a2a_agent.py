@@ -1,13 +1,15 @@
+import os
 from typing import Dict, Any, AsyncGenerator
 import asyncio
 import logging
+import traceback
 
+from google.adk.auth.credential_service.session_state_credential_service import SessionStateCredentialService
 from google.genai import types
 from google.adk import Runner
 from google.adk.artifacts import InMemoryArtifactService
-from google.adk.auth.credential_service.in_memory_credential_service import InMemoryCredentialService
 from google.adk.memory import InMemoryMemoryService
-from google.adk.sessions import InMemorySessionService, Session
+from google.adk.sessions import Session, DatabaseSessionService
 
 from worker_agent.agent import devops_agent
 
@@ -31,10 +33,12 @@ class A2Aagent:
         self.runner = Runner(
             app_name=self.agent.name,
             agent=self.agent,
+            # todo Заменить на свой
             artifact_service=InMemoryArtifactService(),
-            session_service=InMemorySessionService(),
+            session_service=DatabaseSessionService(db_url=os.getenv("DB_URL")),
+            # todo Заменить на свой
             memory_service=InMemoryMemoryService(),
-            credential_service=InMemoryCredentialService()
+            credential_service=SessionStateCredentialService()
         )
 
     async def get_session(self, session_id) -> Session:
@@ -124,7 +128,8 @@ class A2Aagent:
                 "is_error": False,
                 "is_event": False
             }
-        except Exception:
+        except Exception as e:
+            logging.error(traceback.format_exc())
             yield {
                 "is_task_complete": False,
                 "require_user_input": False,

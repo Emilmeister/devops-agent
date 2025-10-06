@@ -41,6 +41,10 @@ class CallMcpTool(BaseTool):
         ))
         ordered_properties = OrderedDict([smart_reasoning_cortage, short_info_to_user_what_you_do_cortage] + [(k, v) for k, v in declaration.parameters.properties.items()])
         declaration.parameters.properties = ordered_properties
+
+        if declaration.parameters.required is None:
+            declaration.parameters.required = []
+
         declaration.parameters.required = declaration.parameters.required + ['smart_reasoning', 'short_info_to_user_what_you_do']
         return declaration
 

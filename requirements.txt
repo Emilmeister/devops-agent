@@ -11,3 +11,4 @@ fastapi_sso
 nest-asyncio
 langchain-text-splitters
 a2a-sdk
+psycopg2
