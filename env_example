@@ -12,11 +12,21 @@ AGENT_VERSION=v1.0.0
 
 URL_AGENT=http://localhost:10009
 
-
-ENABLE_PHOENIX=false
-PHOENIX_ENDPOINT=http://localhost:6006/v1/traces
+ENABLE_PHOENIX=true
+PHOENIX_ENDPOINT=http://phoenix:6006/v1/traces
 PHOENIX_PROJECT_NAME=devops_agent
-MCP_URL=http://localhost:8000/sse
+MCP_URL=http://...:8000/sse
+
+DB_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/adk
+
+# phoenix
+
+# PHOENIX_SQL_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/phoenix
+
+# postgres
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
 
 
 
