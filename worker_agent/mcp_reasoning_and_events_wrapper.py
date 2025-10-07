@@ -26,7 +26,7 @@ class CallMcpTool(BaseTool):
         self.base_tool = base_tool
         super().__init__(
             name=base_tool.name,
-            description=base_tool.description + "\n\n" + short_info_to_user_what_you_do_desc
+            description=base_tool.description + "\n\n" + smart_reasoning_desc + "\n\n" + short_info_to_user_what_you_do_desc
         )
 
     def _get_declaration(self) -> Optional[types.FunctionDeclaration]:
