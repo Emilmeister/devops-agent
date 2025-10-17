@@ -41,7 +41,7 @@ class A2Aagent:
             credential_service=SessionStateCredentialService()
         )
 
-    async def get_session(self, session_id) -> Session:
+    async def get_session(self, session_id: str, headers: dict) -> Session:
         session = await self.runner.session_service.get_session(
             app_name=self.agent.name,
             user_id='a2a_user',
@@ -52,15 +52,15 @@ class A2Aagent:
             session = await self.runner.session_service.create_session(
                 app_name=self.agent.name,
                 user_id='a2a_user',
-                session_id=session_id
+                session_id=session_id,
+                state={'headers': headers}
             )
 
         return session
 
-
-    async def invoke(self, query: str, session_id: str) -> Dict[str, Any]:
+    async def invoke(self, query: str, session_id: str, metadata: dict) -> Dict[str, Any]:
         """Stream the agent's processing and responses."""
-        session = await self.get_session(session_id)
+        session = await self.get_session(session_id, metadata)
 
         content = types.Content(
             role='user',
@@ -84,9 +84,9 @@ class A2Aagent:
         }
 
 
-    async def stream(self, query: str, session_id: str) -> AsyncGenerator[Dict[str, Any], None]:
+    async def stream(self, query: str, session_id: str, metadata: dict) -> AsyncGenerator[Dict[str, Any], None]:
         """Stream the agent's processing and responses."""
-        session = await self.get_session(session_id)
+        session = await self.get_session(session_id, metadata)
 
         content = types.Content(
             role='user',
@@ -112,10 +112,35 @@ class A2Aagent:
                             yield {
                                 "is_task_complete": True,
                                 "require_user_input": False,
-                                "content": f'```bash\n{truncate_string(part.function_call.args['command'])}\n```',
+                                "content": f'Вызов команды:\n```bash\n{truncate_string(part.function_call.args['command'])}\n```',
                                 "is_error": False,
                                 "is_event": True
                             }
+                    # if part.function_response is not None:
+                    #     if part.function_response.name == 'execute_ssh_command':
+                    #         # Находим позицию 'STDOUT:' и берем все после него
+                    #         try:
+                    #             stdout_index = part.function_response.response['result'].content[0].text.find('STDOUT:')
+                    #             stderr_index = part.function_response.response['result'].content[0].text.find('STDERR:')
+                    #             if stderr_index == -1:
+                    #                 stderr_index = len(part.function_response.response['result'].content[0].text)
+                    #             command_result = part.function_response.response['result'].content[0].text[stdout_index + len('STDOUT:'):stderr_index].strip()
+                    #             yield {
+                    #                 "is_task_complete": True,
+                    #                 "require_user_input": False,
+                    #                 "content": f'Результат выполнения команды:\n```bash\n{command_result}\n```',
+                    #                 "is_error": False,
+                    #                 "is_event": True
+                    #             }
+                    #         except Exception as e:
+                    #             logging.error(traceback.format_exc())
+                    #             yield {
+                    #                 "is_task_complete": True,
+                    #                 "require_user_input": False,
+                    #                 "content": f'{part.function_response.response['result'].content[0]}',
+                    #                 "is_error": False,
+                    #                 "is_event": True
+                    #             }
 
                 last_event = event
 
@@ -140,9 +165,9 @@ class A2Aagent:
 
 
     # For compatibility with the original implementation
-    def sync_invoke(self, query: str, session_id: str) -> Dict[str, Any]:
+    def sync_invoke(self, query: str, session_id: str, metadata: dict) -> Dict[str, Any]:
         """Synchronous wrapper for invoke."""
-        return asyncio.run(self.invoke(query, session_id))
+        return asyncio.run(self.invoke(query, session_id, metadata))
 
     # For compatibility with the original API
     SUPPORTED_CONTENT_TYPES = ["text", "text/plain"]

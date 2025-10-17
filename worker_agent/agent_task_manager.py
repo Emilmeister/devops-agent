@@ -41,7 +41,7 @@ class MyAgentExecutor(AgentExecutor):
         # invoke the underlying agent, using streaming results. The streams
         # now are update events.
         try:
-            async for item in self.agent.stream(query, task.context_id):
+            async for item in self.agent.stream(query, task.context_id, context.metadata):
                 is_task_complete = item['is_task_complete']
                 require_user_input = item['require_user_input']
                 is_error = item['is_error']
