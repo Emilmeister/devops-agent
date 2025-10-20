@@ -6,12 +6,12 @@ import traceback
 
 from google.adk.auth.credential_service.session_state_credential_service import SessionStateCredentialService
 from google.genai import types
-from google.adk import Runner
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.memory import InMemoryMemoryService
 from google.adk.sessions import Session, DatabaseSessionService
 
 from worker_agent.agent import devops_agent
+from worker_agent.runner import SessionDirectRunner
 
 logger = logging.getLogger("agents_logger")
 
@@ -30,7 +30,7 @@ class A2Aagent:
     def __init__(self):
         # Initialize runner storage
         self.agent = devops_agent
-        self.runner = Runner(
+        self.runner = SessionDirectRunner(
             app_name=self.agent.name,
             agent=self.agent,
             # todo Заменить на свой
@@ -52,9 +52,10 @@ class A2Aagent:
             session = await self.runner.session_service.create_session(
                 app_name=self.agent.name,
                 user_id='a2a_user',
-                session_id=session_id,
-                state={'headers': headers}
+                session_id=session_id
             )
+
+        session.state['temp:headers'] = headers
 
         return session
 
@@ -68,7 +69,7 @@ class A2Aagent:
         )
         last_event = None
         async for event in self.runner.run_async(
-                user_id=session.user_id, session_id=session.id, new_message=content
+                user_id=session.user_id, session=session, new_message=content
         ):
             last_event = event
 
@@ -95,7 +96,7 @@ class A2Aagent:
         last_event = None
         try:
             async for event in self.runner.run_async(
-                    user_id=session.user_id, session_id=session.id, new_message=content
+                    user_id=session.user_id, session=session, new_message=content
             ):
                 logger.info(f'self.runner.run_async {event}')
                 for part in event.content.parts:

@@ -104,7 +104,7 @@ class MyAgentExecutor(AgentExecutor):
         except Exception as e:
             logging.error(traceback.format_exc())
             await updater.update_status(
-                TaskState.completed,
+                TaskState.failed,
                 new_agent_text_message(
                     '⚠️ Произошла ошибка! Задача не выполнена. Попробуйте позже еще раз', task.context_id, task.id
                 ),

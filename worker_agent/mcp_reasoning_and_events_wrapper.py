@@ -109,7 +109,7 @@ class CallMcpTool(BaseTool):
             del args['short_info_to_user_what_you_do']
         if 'smart_reasoning' in args:
             del args['smart_reasoning']
-        return await self.base_tool.run_async_headers(tool_context=tool_context, args=args, headers=tool_context.state['headers'])
+        return await self.base_tool.run_async_headers(tool_context=tool_context, args=args, headers=tool_context.state['temp:headers'])
 
 
 
