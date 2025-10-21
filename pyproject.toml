@@ -1,0 +1,29 @@
+[project]
+name = "devops-agent"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "ermadatov",email = "ermadatov@cloud.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "google-adk (>=1.16.0,<2.0.0)",
+    "litellm (>=1.78.5,<2.0.0)",
+    "openinference-instrumentation-google-adk (>=0.1.6,<0.2.0)",
+    "arize-phoenix-otel (>=0.13.1,<0.14.0)",
+    "apscheduler (>=3.11.0,<4.0.0)",
+    "email-validator (>=2.3.0,<3.0.0)",
+    "fastapi-sso (>=0.18.0,<0.19.0)",
+    "nest-asyncio (>=1.6.0,<2.0.0)",
+    "langchain-text-splitters (>=1.0.0,<2.0.0)",
+    "a2a-sdk (>=0.3.9,<0.4.0)",
+    "psycopg2 (>=2.9.11,<2.10)"
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -53,6 +53,7 @@ def main():
             default_output_modes=my_agent_executor.agent.SUPPORTED_CONTENT_TYPES,
             capabilities=capabilities,
             skills=[skill],
+            supports_authenticated_extended_card=True
         )
         request_handler = DefaultRequestHandler(
             agent_executor=my_agent_executor,
