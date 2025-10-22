@@ -2,7 +2,6 @@ google-adk
 litellm
 openinference-instrumentation-google-adk
 arize-phoenix-otel
-litellm
 tiktoken
 orjson
 apscheduler
