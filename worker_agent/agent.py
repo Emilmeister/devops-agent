@@ -1,8 +1,11 @@
 from __future__ import annotations
 import os
+from typing import Dict
 
 import yaml
 from google.adk.agents import Agent
+from google.adk.agents.readonly_context import ReadonlyContext
+
 from worker_agent.model import llm_model
 from google.adk.tools.mcp_tool import StreamableHTTPConnectionParams
 from worker_agent.mcp_reasoning_and_events_wrapper import McpProxyToolset
@@ -22,12 +25,17 @@ if os.getenv('ENABLE_PHOENIX', 'false').lower() == 'true':
 with open('prompts.yaml', "r", encoding="utf8") as f:
     prompts = yaml.safe_load(f)
 
+
+def header_provider(ctx: ReadonlyContext) -> Dict[str, str]:
+    return ctx.state['temp:headers']
+
 mcp_tool_set = McpProxyToolset(
     connection_params=StreamableHTTPConnectionParams(
         url=os.getenv("MCP_URL"),
         sse_read_timeout=10.0 * 60,
         timeout=10.0 * 60
-    )
+    ),
+    header_provider=header_provider
 )
 
 async def get_instruction(context):

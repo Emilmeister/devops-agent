@@ -35,7 +35,7 @@ class A2Aagent:
             agent=self.agent,
             # todo Заменить на свой
             artifact_service=InMemoryArtifactService(),
-            session_service=DatabaseSessionService(db_url=os.getenv("DB_URL")),
+            session_service=DatabaseSessionService(db_url=os.getenv("DB_ADK_URL")),
             # todo Заменить на свой
             memory_service=InMemoryMemoryService(),
             credential_service=SessionStateCredentialService()

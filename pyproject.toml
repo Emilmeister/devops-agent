@@ -8,7 +8,7 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
-    "google-adk (>=1.16.0,<2.0.0)",
+    "google-adk (>=1.17.0,<2.0.0)",
     "litellm (>=1.78.5,<2.0.0)",
     "openinference-instrumentation-google-adk (>=0.1.6,<0.2.0)",
     "arize-phoenix-otel (>=0.13.1,<0.14.0)",
@@ -18,7 +18,8 @@ dependencies = [
     "nest-asyncio (>=1.6.0,<2.0.0)",
     "langchain-text-splitters (>=1.0.0,<2.0.0)",
     "a2a-sdk (>=0.3.9,<0.4.0)",
-    "psycopg2 (>=2.9.11,<2.10)"
+    "psycopg2 (>=2.9.11,<2.10)",
+    "asyncpg (>=0.30.0,<0.31.0)"
 ]
 
 [tool.poetry]

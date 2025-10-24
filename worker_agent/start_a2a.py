@@ -2,13 +2,14 @@ import os
 
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
-from a2a.server.tasks import InMemoryTaskStore
+from a2a.server.tasks import DatabaseTaskStore
 from a2a.types import (
     AgentCapabilities,
     AgentCard,
     AgentSkill,
 )
 from dotenv import load_dotenv
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from worker_agent.agent_task_manager import MyAgentExecutor
 
@@ -57,7 +58,9 @@ def main():
         )
         request_handler = DefaultRequestHandler(
             agent_executor=my_agent_executor,
-            task_store=InMemoryTaskStore(),
+            task_store=DatabaseTaskStore(
+                engine=create_async_engine(os.getenv("DB_A2A_URL"))
+            ),
         )
         server = A2AStarletteApplication(
             agent_card=agent_card, http_handler=request_handler
