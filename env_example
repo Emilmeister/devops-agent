@@ -19,9 +19,8 @@ MCP_URL=http://...:8000/sse
 
 DB_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/adk
 
-# phoenix
-
-# PHOENIX_SQL_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/phoenix
+DB_ADK_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/postgres
+DB_A2A_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/postgres
 
 # postgres
 POSTGRES_DB=postgres

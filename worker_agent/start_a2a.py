@@ -13,16 +13,15 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from worker_agent.agent_task_manager import MyAgentExecutor
 
+from worker_agent.settings import settings
 
 # ==========================
 # НАСТРОЙКА ЛОГГЕРА
 # ==========================
 import logging
 
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-
 logging.basicConfig(
-    level=getattr(logging, LOG_LEVEL),
+    level=getattr(logging, settings.log_level),
     format='%(asctime)s %(levelname)s %(name)s %(message)s',
 )
 # ==========================
@@ -35,31 +34,22 @@ logger = logging.getLogger(__name__)
 def main():
     try:
         capabilities = AgentCapabilities(streaming=True)
-        skill = AgentSkill(
-            id='123dsaae',
-            name='Worker',
-            description='Do work',
-            tags=['work'],
-            examples=[
-                "work"
-            ],
-        )
         my_agent_executor = MyAgentExecutor()
         agent_card = AgentCard(
-            name=os.getenv('AGENT_NAME', 'Work Agent'),
-            description=os.getenv('AGENT_DESCRIPTION', 'This agent do work'),
-            url=os.getenv('URL_AGENT'),
-            version=os.getenv('AGENT_VERSION', '1.0.0'),
+            name=settings.agent_name,
+            description=settings.agent_description,
+            url=settings.agent_url,
+            version=settings.agent_version,
             default_input_modes=my_agent_executor.agent.SUPPORTED_CONTENT_TYPES,
             default_output_modes=my_agent_executor.agent.SUPPORTED_CONTENT_TYPES,
             capabilities=capabilities,
-            skills=[skill],
+            skills=[],
             supports_authenticated_extended_card=True
         )
         request_handler = DefaultRequestHandler(
             agent_executor=my_agent_executor,
             task_store=DatabaseTaskStore(
-                engine=create_async_engine(os.getenv("DB_A2A_URL"))
+                engine=create_async_engine(settings.db_a2a_url)
             ),
         )
         server = A2AStarletteApplication(
@@ -67,7 +57,7 @@ def main():
         )
         import uvicorn
 
-        uvicorn.run(server.build(), host='0.0.0.0', port=int(os.getenv("PORT")))
+        uvicorn.run(server.build(), host='0.0.0.0', port=int(settings.port))
     except Exception as e:
         logger.error(f'An error occurred during server startup: {e}')
         exit(1)

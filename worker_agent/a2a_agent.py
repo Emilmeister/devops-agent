@@ -1,4 +1,3 @@
-import os
 from typing import Dict, Any, AsyncGenerator
 import asyncio
 import logging
@@ -12,6 +11,7 @@ from google.adk.sessions import Session, DatabaseSessionService
 
 from worker_agent.agent import devops_agent
 from worker_agent.runner import SessionDirectRunner
+from worker_agent.settings import settings
 
 logger = logging.getLogger("agents_logger")
 
@@ -35,7 +35,7 @@ class A2Aagent:
             agent=self.agent,
             # todo Заменить на свой
             artifact_service=InMemoryArtifactService(),
-            session_service=DatabaseSessionService(db_url=os.getenv("DB_ADK_URL")),
+            session_service=DatabaseSessionService(db_url=settings.db_adk_url),
             # todo Заменить на свой
             memory_service=InMemoryMemoryService(),
             credential_service=SessionStateCredentialService()

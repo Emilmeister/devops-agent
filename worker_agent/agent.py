@@ -1,5 +1,4 @@
 from __future__ import annotations
-import os
 from typing import Dict
 
 import yaml
@@ -12,13 +11,14 @@ from worker_agent.mcp_reasoning_and_events_wrapper import McpProxyToolset
 
 from phoenix.otel import register
 from dotenv import load_dotenv
+from worker_agent.settings import settings
 
 load_dotenv()
 
-if os.getenv('ENABLE_PHOENIX', 'false').lower() == 'true':
+if settings.enable_phoenix.lower() == 'true':
     register(
-        project_name=os.getenv("PHOENIX_PROJECT_NAME"),
-        endpoint=os.getenv("PHOENIX_ENDPOINT"),
+        project_name=settings.phoenix_project_name,
+        endpoint=settings.phoenix_endpoint,
         auto_instrument=True
     )
 
@@ -31,7 +31,7 @@ def header_provider(ctx: ReadonlyContext) -> Dict[str, str]:
 
 mcp_tool_set = McpProxyToolset(
     connection_params=StreamableHTTPConnectionParams(
-        url=os.getenv("MCP_URL"),
+        url=settings.mcp_url,
         sse_read_timeout=10.0 * 60,
         timeout=10.0 * 60
     ),
